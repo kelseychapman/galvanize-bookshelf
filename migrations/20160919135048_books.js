@@ -1,11 +1,12 @@
+
 'use strict';
 
 exports.up = function(knex) {
   return knex.schema.createTable('books', (table) => {
-    table.increments();
-    table.string('title').notNullable().defaultTo('');
-    table.string('author').notNullable().defaultTo('');
-    table.string('genre').notNullable().defaultTo('');
+    table.increments(); // PK defaults to id
+    table.string('title', 255).notNullable().defaultTo('');
+    table.string('author', 255).notNullable().defaultTo('');
+    table.string('genre', 255).notNullable().defaultTo('');
     table.text('description').notNullable().defaultTo('');
     table.text('cover_url').notNullable().defaultTo('');
     table.timestamps(true, true);
