@@ -46,14 +46,15 @@ app.use((req, res, next) => {
 });
 
 const books = require('./routes/books');
-const favorites = require('./routes/favorites');
-const session = require('./routes/session');
+// const favorites = require('./routes/favorites');
+// const session = require('./routes/session');
 const users = require('./routes/users');
 
 app.use('/books', books);
-app.use(favorites);
-app.use(session);
-app.use(users);
+// app.use('/favorites', favorites);
+// app.use('/session', session);
+app.use('/users', users);
+
 
 app.use((_req, res) => {
   res.sendStatus(404);

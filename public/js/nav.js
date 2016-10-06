@@ -3,7 +3,7 @@
 
   $('.button-collapse').sideNav();
 
-  $.getJSON('/token')
+  $.getJSON('/session')
     .done((loggedIn) => {
       const $firstNavItems = $('.firstNavItem');
       const $secondNavItems = $('.secondNavItem');

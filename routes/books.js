@@ -1,42 +1,27 @@
-'use strict';
-
-const express = require('express');
-// eslint-disable-next-line new-cap
-const knex = require('../knex');
-const {
-  camelizeKeys,
-  decamelizeKeys
-} = require('humps');
-const router = express.Router();
+var express = require('express');
+var router = express.Router();
+var knex = require('../knex');
+module.exports = router;
+const { camelizeKeys, decamelizeKeys } = require('humps');
 
 router.get('/', (req, res, next) => {
   knex('books')
     .orderBy('title')
-    .then((rows) => {
-      const books = camelizeKeys(rows);
-      res.send(books);
+    .then((books) => {
+      res.json(camelizeKeys(books));
     })
     .catch((err) => {
       next(err);
     })
 })
 
+
 router.get('/:id', (req, res, next) => {
-  const id = Number.parseInt(req.params.id);
-
-  if (Number.isNaN(id)) {
-    return next();
-  }
   knex('books')
-    .where('id', id)
     .first()
-    .then((row) => {
-      if (!row) {
-        return next();
-      }
-      const book = camelizeKeys(row);
-
-      res.send(book);
+    .where('id', req.params.id)
+    .then((books) => {
+      res.json(camelizeKeys(books));
     })
     .catch((err) => {
       next(err);
@@ -44,120 +29,49 @@ router.get('/:id', (req, res, next) => {
 })
 
 router.post('/', (req, res, next) => {
-  const {
-    title,
-    author,
-    genre,
-    description,
-    coverUrl
-  } = req.body;
-
-  const insertBook = {
-    title,
-    author,
-    genre,
-    description,
-    coverUrl
-  };
-
   knex('books')
-    .insert(decamelizeKeys(insertBook), '*')
-    .then((rows) => {
-      const book = camelizeKeys(rows[0]);
-      res.send(book);
-    })
-    .catch((err) => {
-      next(err);
-    })
+  .insert(decamelizeKeys(req.body))
+  .returning('*')
+  // console.log(book)
+  .then((books) => {
+  res.json(camelizeKeys(books[0]));
+})
+.catch((err) => {
+  next(err);
+})
 })
 
 router.patch('/:id', (req, res, next) => {
-  const id = Number.parseInt(req.params.id);
-
-  if (Number.isNaN(id)) {
-    return next();
-  }
   knex('books')
-    .where('id', id)
+    .where('id', req.params.id)
     .first()
+    .update({
+      title: req.body.title,
+      author: req.body.author,
+      cover_url: req.body.coverUrl,
+      description: req.body.description,
+      genre: req.body.genre
+    })
+    .returning('*')
     .then((books) => {
-      if (!books) {
-        return next();
-      }
+    res.json(camelizeKeys(books[0]));
+  })
+  .catch((err) => {
+    next(err);
+  })
+  })
 
-      const {
-        title,
-        author,
-        genre,
-        description,
-        coverUrl
-      } = req.body;
-      const updateBook = {};
-
-      if (title) {
-        updateBook.title = title;
-      }
-
-      if (author) {
-        updateBook.author = author;
-      }
-
-      if (genre) {
-        updateBook.genre = genre;
-      }
-
-      if (description) {
-        updateBook.description = description;
-      }
-
-      if (coverUrl) {
-        updateBook.coverUrl = coverUrl;
-      }
-
-      return knex('books')
-        .update(decamelizeKeys(updateBook), '*')
-        .where('id', id);
-    })
-    .then((rows) => {
-      const book = camelizeKeys(rows[0]);
-
-      res.send(book);
-    })
-    .catch((err) => {
-      next(err);
-    });
-});
 
 router.delete('/:id', (req, res, next) => {
-  const id = Number.parseInt(req.params.id);
-
-  if (Number.isNaN(id)) {
-    return next();
-  }
-
-  let book
-
   knex('books')
-    .where('id', id)
-    .first()
-    .then((row) => {
-      if (!row) {
-        return next();
-      }
-
-      book = camelizeKeys(row);
-
-      return knex('books')
-        .del()
-        .where('id', id);
-    })
-    .then(() => {
-      delete book.id;
-      res.send(book);
-    })
-    .catch((err) => {
-      next(err);
-    });
-});
-
-module.exports = router;
+   .where('id', req.params.id)
+   .del()
+   .returning('*')
+   .then((books) => {
+     delete books[0].id
+   res.json(camelizeKeys(books[0]));
+ })
+ .catch((err) => {
+   next(err);
+ })
+ })
