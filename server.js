@@ -46,12 +46,12 @@ app.use((req, res, next) => {
 });
 
 const books = require('./routes/books');
-// const favorites = require('./routes/favorites');
+const favorites = require('./routes/favorites');
 const session = require('./routes/session');
 const users = require('./routes/users');
 
 app.use('/books', books);
-// app.use('/favorites', favorites);
+app.use('/favorites', favorites);
 app.use('/session', session);
 app.use('/users', users);
 
