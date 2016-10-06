@@ -13,7 +13,7 @@ router.post('/', (req, res, next) => {
     first_name: req.body.firstName,
     last_name: req.body.lastName,
     email: req.body.email,
-    hashed_password: bcrypt.hashSync(req.body.password, 8)
+    hashed_password: bcrypt.hashSync(req.body.password, 12)
   })
   .returning('*')
   .then((users) => {
@@ -22,5 +22,5 @@ router.post('/', (req, res, next) => {
     })
     .catch((err) => {
       next(err);
-    })
+      })
     })
