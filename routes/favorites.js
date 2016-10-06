@@ -2,14 +2,21 @@ var express = require('express');
 var router = express.Router();
 var knex = require('../knex');
 const bcrypt = require('bcrypt');
+const {camelizeKeys, decamelizeKeys} = require('humps');
 module.exports = router;
-const {
-    camelizeKeys,
-    decamelizeKeys
-} = require('humps');
 
+const authorize = function(req, res, next){
+  if(!req.session.userInfo){
+    res.type('text/plain')
+    res.status('401')
+    res.send('Unauthorized')
+  } else {
+    next();
+  }
 
-router.get('/', (req, res, next) => {
+}
+
+router.get('/', authorize, (req, res, next) => {
     knex('favorites')
         .innerJoin('books', 'favorites.book_id', 'books.id')
         .where('favorites.user_id', 1)
@@ -19,7 +26,7 @@ router.get('/', (req, res, next) => {
 });
 
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', authorize, (req, res, next) => {
     knex('favorites')
         .where('book_id', req.query.bookId)
         .then((favorites) => {
@@ -32,13 +39,25 @@ router.get('/:id', (req, res, next) => {
 })
 
 
-router.post('/', (req, res, next) => {
+router.post('/', authorize, (req, res, next) => {
   knex('favorites')
   .insert({
     book_id: req.body.bookId,
     user_id: 1
   }) .returning('*')
   .then((favorites) => {
+    res.json(camelizeKeys(favorites[0]));
+  })
+})
+
+
+router.delete('/', authorize, (req, res, next) => {
+knex('favorites')
+  .where('book_id', req.body.bookId)
+  .del()
+  .returning('*')
+  .then((favorites) => {
+    delete favorites[0].id;
     res.json(camelizeKeys(favorites[0]));
   })
 })
